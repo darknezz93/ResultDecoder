@@ -57,25 +57,37 @@ public class MainWidnowController {
         saveResultsButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
 
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
-                fileChooser.getExtensionFilters().add(extFilter);
-                fileChooser.setInitialFileName("wyniki.csv");
+                File file = showCsvFileSaveDialog(event, "wyniki.csv",
+                        "Zapisz plik z wynikami studentów");
 
-                File file = fileChooser.showSaveDialog(((Node)event.getTarget()).getScene().getWindow());
                 if(file != null){
                     if(!file.getName().contains(".")) {
                         file = new File(file.getAbsolutePath() + ".csv");
                     }
                     try {
-                        fileHelper.saveCsvFile(file);
+                        fileHelper.saveCsvResultFile(file);
+                        File validationFile = showCsvFileSaveDialog(event, "validation.csv",
+                                "Zapisz plik z wynikami walidacji");
+                        fileHelper.saveCsvValidationFile(validationFile);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
         });
+    }
+
+    private File showCsvFileSaveDialog(ActionEvent event, String initialFileName,
+                                          String dialogTitle) {
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+        fileChooser.getExtensionFilters().add(extFilter);
+        fileChooser.setInitialFileName(initialFileName);
+        fileChooser.setTitle(dialogTitle);
+
+        File file = fileChooser.showSaveDialog(((Node)event.getTarget()).getScene().getWindow());
+        return file;
     }
 
 
