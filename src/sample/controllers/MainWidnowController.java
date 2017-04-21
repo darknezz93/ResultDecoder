@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -12,7 +13,6 @@ import javafx.stage.FileChooser;
 import sample.helpers.FileHelper;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 
 public class MainWidnowController {
@@ -42,13 +42,19 @@ public class MainWidnowController {
             public void handle(ActionEvent event) {
                 fileHelper = new FileHelper();
                 DirectoryChooser directoryChooser = new DirectoryChooser();
-                File directory =
-                        directoryChooser.showDialog(((Node)event.getTarget()).getScene().getWindow());
-                if(directory != null) {
-                    fileNameTextField.setText(directory.getName());
-                    fileHelper.processDirectory(directory);
-                    saveResultsButton.setDisable(false);
+                try {
+                    File directory =
+                            directoryChooser.showDialog(((Node)event.getTarget()).getScene().getWindow());
+                    if(directory != null) {
+                        fileNameTextField.setText(directory.getName());
+                        fileHelper.processDirectory(directory);
+                        saveResultsButton.setDisable(false);
+                    }
+                } catch(Exception e) {
+                    showErrorDialog();
+                    resetComponents();
                 }
+
             }
         });
     }
@@ -70,12 +76,30 @@ public class MainWidnowController {
                         File validationFile = showCsvFileSaveDialog(event, "validation.csv",
                                 "Zapisz plik z wynikami walidacji");
                         fileHelper.saveCsvValidationFile(validationFile);
-                    } catch (IOException e) {
+                        showSuccessDialog();
+                        resetComponents();
+                    } catch (Exception e) {
+                        showErrorDialog();
+                        resetComponents();
                         e.printStackTrace();
                     }
                 }
             }
         });
+    }
+
+    private void showSuccessDialog() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Sukces");
+        alert.setContentText("Wyniki zostały wygenerowane");
+        alert.showAndWait();
+    }
+
+    private void showErrorDialog() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Błąd");
+        alert.setContentText("Wystąpił błąd podczas przetwarzania pliku. Sprawdź poprawność formatu wczytywanych plików");
+        alert.showAndWait();
     }
 
     private File showCsvFileSaveDialog(ActionEvent event, String initialFileName,
@@ -92,6 +116,7 @@ public class MainWidnowController {
 
 
     private void resetComponents() {
+        fileNameTextField.setText("");
         fileNameTextField.setDisable(true);
         saveResultsButton.setDisable(true);
     }
